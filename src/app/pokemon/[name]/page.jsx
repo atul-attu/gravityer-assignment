@@ -1,24 +1,17 @@
-// src/app/pokemon/[name]/page.jsx
-'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 
-const PokemonDetail = () => {
-  const router = useRouter();
-  const { name } = router.query;
-  const [pokemon, setPokemon] = useState(null);
+async function fetchPokemon(name) {
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  if (!res.ok) {
+    throw new Error('Failed to fetch data');
+  }
+  return res.json();
+}
 
-  useEffect(() => {
-    if (name) {
-      fetch(`https://pokeapi.co/api/v2/pokemon/${name}`)
-        .then((response) => response.json())
-        .then((data) => setPokemon(data));
-    }
-  }, [name]);
-
-  if (!pokemon) return <div>Loading...</div>;
+export default async function PokemonDetail({ params }) {
+  const { name } = params;
+  const pokemon = await fetchPokemon(name);
 
   return (
     <div className="container mx-auto p-4">
@@ -34,6 +27,4 @@ const PokemonDetail = () => {
       </div>
     </div>
   );
-};
-
-export default PokemonDetail;
+}

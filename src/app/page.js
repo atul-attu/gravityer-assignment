@@ -1,34 +1,36 @@
-// pages/index.js
 "use client";
-import { useState } from 'react';
-import SearchForm from '../components/SearchForm';
 import PokemonList from '../components/PokemonList';
-import UsePokemon from '../hooks/UsePokemon'
+import SearchForm from '../components/SearchForm';
+import { useState, useEffect } from 'react';
 
-const Home = () => {
-  const [type, setType] = useState('');
-  const [search, setSearch] = useState('');
-  const { pokemon, loading } = UsePokemon(type);
+export default function HomePage() {
+  const [pokemonData, setPokemonData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
 
-  const handleSearch = (type, search) => {
-    setType(type);
-    setSearch(search);
+  useEffect(() => {
+    fetch('https://pokeapi.co/api/v2/pokemon?limit=151')
+      .then((res) => res.json())
+      .then((data) => {
+        setPokemonData(data.results);
+        setFilteredData(data.results);
+      });
+  }, []);
+
+  const handleSearch = (searchTerm, type) => {
+    let filtered = pokemonData;
+    if (type) {
+      filtered = filtered.filter((p) => p.types && p.types.includes(type));
+    }
+    if (searchTerm) {
+      filtered = filtered.filter((p) => p.name.includes(searchTerm));
+    }
+    setFilteredData(filtered);
   };
-
-  const filteredPokemon = pokemon.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
-  );
 
   return (
     <div className="container mx-auto p-4">
       <SearchForm onSearch={handleSearch} />
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <PokemonList pokemon={filteredPokemon} />
-      )}
+      <PokemonList pokemon={filteredData} />
     </div>
   );
-};
-
-export default Home;
+}
